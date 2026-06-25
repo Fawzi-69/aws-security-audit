@@ -1,0 +1,9 @@
+# Copier en terraform.tfvars et adapter.
+github_repository = "fawzi/aws-security-audit"
+region            = "eu-west-3"
+
+# Restreindre aux branches/environnements voulus (optionnel) :
+# allowed_refs = ["ref:refs/heads/main", "environment:production"]
+
+# Si le provider OIDC GitHub existe déjà dans le compte :
+# create_oidc_provider = false
