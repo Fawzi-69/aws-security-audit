@@ -1,0 +1,66 @@
+name: audit
+
+# Audit Prowler du compte AWS via OIDC (aucune clé statique).
+# Déclenché à la demande ou chaque lundi. Lecture seule via le rôle d'audit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Région AWS"
+        required: false
+        default: "eu-west-3"
+      compliance:
+        description: "Référentiel de conformité Prowler"
+        required: false
+        default: "cis_3.0_aws"
+  schedule:
+    - cron: "0 6 * * 1" # tous les lundis 06:00 UTC
+
+# id-token: write est requis pour l'échange OIDC ; contents: read pour le checkout.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  prowler:
+    name: Prowler CIS (read-only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authentification AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_AUDIT_ROLE_ARN }}
+          aws-region: ${{ inputs.region || 'eu-west-3' }}
+          role-session-name: gha-security-audit
+
+      - name: Vérifier l'identité assumée
+        run: aws sts get-caller-identity
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer Prowler
+        run: pipx install prowler
+
+      - name: Lancer l'audit
+        run: |
+          chmod +x scripts/*.sh
+          scripts/run_audit.sh \
+            -r "${{ inputs.region || 'eu-west-3' }}" \
+            -c "${{ inputs.compliance || 'cis_3.0_aws' }}"
+
+      - name: Générer le rapport consolidé
+        if: always()
+        run: scripts/generate_report.sh
+
+      - name: Publier les rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prowler-audit-${{ github.run_id }}
+          path: reports/
+          if-no-files-found: warn

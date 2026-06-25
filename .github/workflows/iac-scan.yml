@@ -1,0 +1,99 @@
+name: iac-scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: fmt / validate / tflint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir:
+          - iac/hardened
+          - terraform/oidc-audit-role
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive ${{ matrix.dir }}
+
+      - name: terraform init
+        run: terraform -chdir=${{ matrix.dir }} init -backend=false
+
+      - name: terraform validate
+        run: terraform -chdir=${{ matrix.dir }} validate
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: tflint
+        run: |
+          cd ${{ matrix.dir }}
+          tflint --init
+          tflint --no-color
+
+  checkov:
+    name: checkov (gate dur sur hardened + rôle OIDC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkov — hardened
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: iac/hardened
+          config_file: config/checkov/.checkov.yaml
+          framework: terraform
+          soft_fail: false
+          output_format: cli
+
+      - name: Checkov — rôle OIDC
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/oidc-audit-role
+          config_file: config/checkov/.checkov.yaml
+          framework: terraform
+          soft_fail: false
+          output_format: cli
+
+  iac-demo:
+    name: scan démo (insecure — findings attendus, non bloquant)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkov — insecure (rapport)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: iac/insecure
+          framework: terraform
+          soft_fail: true
+          output_format: cli,json
+          output_file_path: reports
+
+      - name: tfsec — insecure (rapport)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: iac/insecure
+          soft_fail: true
+
+      - name: Publier le rapport de démo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iac-demo-findings
+          path: reports/
+          if-no-files-found: ignore
