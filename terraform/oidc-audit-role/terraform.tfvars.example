@@ -1,5 +1,5 @@
 # Copier en terraform.tfvars et adapter.
-github_repository = "fawzi/aws-security-audit"
+github_repository = "Fawzi-69/aws-security-audit"
 region            = "eu-west-3"
 
 # Restreindre aux branches/environnements voulus (optionnel) :
