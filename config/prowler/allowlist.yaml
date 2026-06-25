@@ -1,0 +1,16 @@
+# Mutelist / allowlist Prowler — exceptions documentées (faux positifs ou risque accepté).
+# Chaque entrée DOIT être justifiée et datée. Format Prowler v4 (mutelist).
+# Doc : https://docs.prowler.com/projects/prowler-open-source/en/latest/tutorials/mutelist/
+Mutelist:
+  Accounts:
+    "*":
+      Checks:
+        # Exemple : bucket de logs interne dont l'absence d'access-logging est assumée
+        # (l'auto-journalisation d'un bucket de logs créerait une récursion).
+        s3_bucket_server_access_logging_enabled:
+          Regions:
+            - "*"
+          Resources:
+            - "demo-hardened-logs"
+          Tags: []
+          # Justification : bucket de destination des logs. Revu le 2026-06-25.

@@ -1,0 +1,17 @@
+# Configuration Checkov partagée (local + CI).
+# Doc : https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html
+framework:
+  - terraform
+
+# Compacte la sortie console ; le JSON détaillé est écrit par scan_iac.sh.
+compact: true
+quiet: true
+
+# Les exceptions ponctuelles se déclarent au plus près du code, via des
+# commentaires `#checkov:skip=<CHECK_ID>:<justification>` dans le .tf concerné,
+# afin de rester auditables. Lister ici uniquement les checks réellement non
+# pertinents pour l'ensemble du dépôt.
+skip-check: []
+
+# Ne pas télécharger de modules externes pendant le scan (déterminisme CI).
+download-external-modules: false
