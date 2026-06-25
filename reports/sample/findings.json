@@ -1,0 +1,220 @@
+{
+  "generated": "2026-06-25 20:05 UTC",
+  "summary": {
+    "total": 20,
+    "by_severity": {
+      "critical": 3,
+      "high": 7,
+      "medium": 8,
+      "low": 2,
+      "info": 0
+    },
+    "by_source": {
+      "checkov": 9,
+      "prowler": 6,
+      "tfsec": 5
+    }
+  },
+  "findings": [
+    {
+      "source": "checkov",
+      "severity": "critical",
+      "control": "CKV_AWS_24",
+      "title": "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22",
+      "resource": "aws_security_group.app",
+      "location": "/iac/insecure/ec2.tf:22",
+      "status": "fail",
+      "remediation": "Restreindre l'ingress SSH à un CIDR de confiance, jamais 0.0.0.0/0."
+    },
+    {
+      "source": "prowler",
+      "severity": "critical",
+      "control": "iam_no_root_access_key",
+      "title": "Ensure no root account access key exists",
+      "resource": "root",
+      "location": "global",
+      "status": "fail",
+      "remediation": "Supprimer toute access key associée au compte root ; n'utiliser le root qu'exceptionnellement avec MFA."
+    },
+    {
+      "source": "tfsec",
+      "severity": "critical",
+      "control": "aws-ec2-no-public-ingress-sgr",
+      "title": "Security group rule allows ingress from public internet on port 22",
+      "resource": "aws_security_group.app",
+      "location": "/iac/insecure/ec2.tf:27",
+      "status": "fail",
+      "remediation": "Restreindre cidr_blocks à une plage privée."
+    },
+    {
+      "source": "checkov",
+      "severity": "high",
+      "control": "CKV_AWS_20",
+      "title": "Ensure the S3 bucket does not allow READ permissions to everyone",
+      "resource": "aws_s3_bucket_acl.app",
+      "location": "/iac/insecure/s3.tf:9",
+      "status": "fail",
+      "remediation": "Retirer l'ACL public-read ; gérer l'accès via des policies restreintes."
+    },
+    {
+      "source": "checkov",
+      "severity": "high",
+      "control": "CKV_AWS_53",
+      "title": "Ensure S3 bucket has block public ACLs enabled",
+      "resource": "aws_s3_bucket_public_access_block.app",
+      "location": "/iac/insecure/s3.tf:16",
+      "status": "fail",
+      "remediation": "Activer block_public_acls = true sur le public access block du bucket."
+    },
+    {
+      "source": "checkov",
+      "severity": "high",
+      "control": "CKV_AWS_79",
+      "title": "Ensure Instance Metadata Service Version 1 is not enabled",
+      "resource": "aws_instance.app",
+      "location": "/iac/insecure/ec2.tf:4",
+      "status": "fail",
+      "remediation": "Imposer IMDSv2 : metadata_options { http_tokens = \"required\" }."
+    },
+    {
+      "source": "prowler",
+      "severity": "high",
+      "control": "iam_password_policy_minimum_length_14",
+      "title": "Ensure IAM password policy requires minimum length of 14 or greater",
+      "resource": "account_password_policy",
+      "location": "global",
+      "status": "fail",
+      "remediation": "Porter minimum_password_length à 14 dans la politique de mot de passe du compte."
+    },
+    {
+      "source": "prowler",
+      "severity": "high",
+      "control": "iam_root_mfa_enabled",
+      "title": "Ensure MFA is enabled for the root account",
+      "resource": "root",
+      "location": "global",
+      "status": "fail",
+      "remediation": "Activer un dispositif MFA matériel ou virtuel sur le compte root."
+    },
+    {
+      "source": "tfsec",
+      "severity": "high",
+      "control": "aws-ec2-enforce-http-token-imds",
+      "title": "Instance does not require IMDS access to require a token",
+      "resource": "aws_instance.app",
+      "location": "/iac/insecure/ec2.tf:9",
+      "status": "fail",
+      "remediation": "Définir http_tokens = required dans metadata_options."
+    },
+    {
+      "source": "tfsec",
+      "severity": "high",
+      "control": "aws-s3-block-public-acls",
+      "title": "S3 Access block should block public ACL",
+      "resource": "aws_s3_bucket_public_access_block.app",
+      "location": "/iac/insecure/s3.tf:18",
+      "status": "fail",
+      "remediation": "Mettre block_public_acls à true."
+    },
+    {
+      "source": "checkov",
+      "severity": "medium",
+      "control": "CKV_AWS_145",
+      "title": "Ensure that S3 buckets are encrypted with KMS by default",
+      "resource": "aws_s3_bucket.app",
+      "location": "/iac/insecure/s3.tf:5",
+      "status": "fail",
+      "remediation": "Ajouter aws_s3_bucket_server_side_encryption_configuration avec une CMK KMS."
+    },
+    {
+      "source": "checkov",
+      "severity": "medium",
+      "control": "CKV_AWS_67",
+      "title": "Ensure CloudTrail is enabled in all Regions",
+      "resource": "aws_cloudtrail.this",
+      "location": "/iac/insecure/logging.tf:10",
+      "status": "fail",
+      "remediation": "Mettre is_multi_region_trail = true."
+    },
+    {
+      "source": "checkov",
+      "severity": "medium",
+      "control": "CKV_AWS_7",
+      "title": "Ensure rotation for customer created CMKs is enabled",
+      "resource": "aws_kms_key.this",
+      "location": "/iac/insecure/kms.tf:4",
+      "status": "fail",
+      "remediation": "Activer enable_key_rotation = true sur la CMK."
+    },
+    {
+      "source": "checkov",
+      "severity": "medium",
+      "control": "CKV_AWS_8",
+      "title": "Ensure all data stored in the Launch configuration EBS is securely encrypted",
+      "resource": "aws_instance.app",
+      "location": "/iac/insecure/ec2.tf:14",
+      "status": "fail",
+      "remediation": "Chiffrer le volume racine : root_block_device { encrypted = true }."
+    },
+    {
+      "source": "prowler",
+      "severity": "medium",
+      "control": "cloudtrail_multi_region_enabled",
+      "title": "Ensure CloudTrail is enabled in all regions",
+      "resource": "default-trail",
+      "location": "eu-west-3",
+      "status": "fail",
+      "remediation": "Configurer un trail multi-régions couvrant les events de management et les services globaux."
+    },
+    {
+      "source": "prowler",
+      "severity": "medium",
+      "control": "ec2_ebs_default_encryption",
+      "title": "Ensure EBS volume encryption is enabled by default",
+      "resource": "ebs-encryption-default",
+      "location": "eu-west-3",
+      "status": "fail",
+      "remediation": "Activer le chiffrement EBS par défaut au niveau du compte/région."
+    },
+    {
+      "source": "tfsec",
+      "severity": "medium",
+      "control": "aws-ec2-enable-at-rest-encryption",
+      "title": "Root block device is not encrypted",
+      "resource": "aws_instance.app",
+      "location": "/iac/insecure/ec2.tf:14",
+      "status": "fail",
+      "remediation": "Mettre encrypted = true sur root_block_device."
+    },
+    {
+      "source": "tfsec",
+      "severity": "medium",
+      "control": "aws-s3-encryption-customer-key",
+      "title": "S3 encryption should use Customer Managed Keys",
+      "resource": "aws_s3_bucket.app",
+      "location": "/iac/insecure/s3.tf:5",
+      "status": "fail",
+      "remediation": "Configurer le chiffrement SSE-KMS avec une CMK."
+    },
+    {
+      "source": "checkov",
+      "severity": "low",
+      "control": "CKV_AWS_36",
+      "title": "Ensure CloudTrail log file validation is enabled",
+      "resource": "aws_cloudtrail.this",
+      "location": "/iac/insecure/logging.tf:10",
+      "status": "fail",
+      "remediation": "Mettre enable_log_file_validation = true."
+    },
+    {
+      "source": "prowler",
+      "severity": "low",
+      "control": "iam_rotate_access_keys_90_days",
+      "title": "Ensure access keys are rotated every 90 days or less",
+      "resource": "user/ci-legacy",
+      "location": "global",
+      "status": "fail",
+      "remediation": "Faire tourner ou désactiver toute access key de plus de 90 jours."
+    }
+  ]
+}

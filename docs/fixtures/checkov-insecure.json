@@ -1,0 +1,91 @@
+{
+  "check_type": "terraform",
+  "results": {
+    "failed_checks": [
+      {
+        "check_id": "CKV_AWS_53",
+        "check_name": "Ensure S3 bucket has block public ACLs enabled",
+        "severity": "HIGH",
+        "resource": "aws_s3_bucket_public_access_block.app",
+        "file_path": "/iac/insecure/s3.tf",
+        "file_line_range": [16, 24],
+        "guideline": "Activer block_public_acls = true sur le public access block du bucket."
+      },
+      {
+        "check_id": "CKV_AWS_20",
+        "check_name": "Ensure the S3 bucket does not allow READ permissions to everyone",
+        "severity": "HIGH",
+        "resource": "aws_s3_bucket_acl.app",
+        "file_path": "/iac/insecure/s3.tf",
+        "file_line_range": [9, 12],
+        "guideline": "Retirer l'ACL public-read ; gérer l'accès via des policies restreintes."
+      },
+      {
+        "check_id": "CKV_AWS_145",
+        "check_name": "Ensure that S3 buckets are encrypted with KMS by default",
+        "severity": "MEDIUM",
+        "resource": "aws_s3_bucket.app",
+        "file_path": "/iac/insecure/s3.tf",
+        "file_line_range": [5, 7],
+        "guideline": "Ajouter aws_s3_bucket_server_side_encryption_configuration avec une CMK KMS."
+      },
+      {
+        "check_id": "CKV_AWS_79",
+        "check_name": "Ensure Instance Metadata Service Version 1 is not enabled",
+        "severity": "HIGH",
+        "resource": "aws_instance.app",
+        "file_path": "/iac/insecure/ec2.tf",
+        "file_line_range": [4, 19],
+        "guideline": "Imposer IMDSv2 : metadata_options { http_tokens = \"required\" }."
+      },
+      {
+        "check_id": "CKV_AWS_8",
+        "check_name": "Ensure all data stored in the Launch configuration EBS is securely encrypted",
+        "severity": "MEDIUM",
+        "resource": "aws_instance.app",
+        "file_path": "/iac/insecure/ec2.tf",
+        "file_line_range": [14, 17],
+        "guideline": "Chiffrer le volume racine : root_block_device { encrypted = true }."
+      },
+      {
+        "check_id": "CKV_AWS_24",
+        "check_name": "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22",
+        "severity": "CRITICAL",
+        "resource": "aws_security_group.app",
+        "file_path": "/iac/insecure/ec2.tf",
+        "file_line_range": [22, 41],
+        "guideline": "Restreindre l'ingress SSH à un CIDR de confiance, jamais 0.0.0.0/0."
+      },
+      {
+        "check_id": "CKV_AWS_7",
+        "check_name": "Ensure rotation for customer created CMKs is enabled",
+        "severity": "MEDIUM",
+        "resource": "aws_kms_key.this",
+        "file_path": "/iac/insecure/kms.tf",
+        "file_line_range": [4, 7],
+        "guideline": "Activer enable_key_rotation = true sur la CMK."
+      },
+      {
+        "check_id": "CKV_AWS_67",
+        "check_name": "Ensure CloudTrail is enabled in all Regions",
+        "severity": "MEDIUM",
+        "resource": "aws_cloudtrail.this",
+        "file_path": "/iac/insecure/logging.tf",
+        "file_line_range": [10, 16],
+        "guideline": "Mettre is_multi_region_trail = true."
+      },
+      {
+        "check_id": "CKV_AWS_36",
+        "check_name": "Ensure CloudTrail log file validation is enabled",
+        "severity": "LOW",
+        "resource": "aws_cloudtrail.this",
+        "file_path": "/iac/insecure/logging.tf",
+        "file_line_range": [10, 16],
+        "guideline": "Mettre enable_log_file_validation = true."
+      }
+    ],
+    "passed_checks": [],
+    "skipped_checks": []
+  },
+  "summary": {"passed": 18, "failed": 9, "skipped": 0}
+}

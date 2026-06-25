@@ -1,0 +1,54 @@
+{
+  "results": [
+    {
+      "rule_id": "AVD-AWS-0086",
+      "long_id": "aws-s3-block-public-acls",
+      "rule_description": "S3 Access block should block public ACL",
+      "severity": "HIGH",
+      "resource": "aws_s3_bucket_public_access_block.app",
+      "location": {"filename": "/iac/insecure/s3.tf", "start_line": 18},
+      "resolution": "Mettre block_public_acls à true.",
+      "links": ["https://aquasecurity.github.io/tfsec/latest/checks/aws/s3/block-public-acls/"]
+    },
+    {
+      "rule_id": "AVD-AWS-0131",
+      "long_id": "aws-ec2-enforce-http-token-imds",
+      "rule_description": "Instance does not require IMDS access to require a token",
+      "severity": "HIGH",
+      "resource": "aws_instance.app",
+      "location": {"filename": "/iac/insecure/ec2.tf", "start_line": 9},
+      "resolution": "Définir http_tokens = required dans metadata_options.",
+      "links": ["https://aquasecurity.github.io/tfsec/latest/checks/aws/ec2/enforce-http-token-imds/"]
+    },
+    {
+      "rule_id": "AVD-AWS-0107",
+      "long_id": "aws-ec2-no-public-ingress-sgr",
+      "rule_description": "Security group rule allows ingress from public internet on port 22",
+      "severity": "CRITICAL",
+      "resource": "aws_security_group.app",
+      "location": {"filename": "/iac/insecure/ec2.tf", "start_line": 27},
+      "resolution": "Restreindre cidr_blocks à une plage privée.",
+      "links": ["https://aquasecurity.github.io/tfsec/latest/checks/aws/ec2/no-public-ingress-sgr/"]
+    },
+    {
+      "rule_id": "AVD-AWS-0088",
+      "long_id": "aws-s3-encryption-customer-key",
+      "rule_description": "S3 encryption should use Customer Managed Keys",
+      "severity": "MEDIUM",
+      "resource": "aws_s3_bucket.app",
+      "location": {"filename": "/iac/insecure/s3.tf", "start_line": 5},
+      "resolution": "Configurer le chiffrement SSE-KMS avec une CMK.",
+      "links": ["https://aquasecurity.github.io/tfsec/latest/checks/aws/s3/encryption-customer-key/"]
+    },
+    {
+      "rule_id": "AVD-AWS-0132",
+      "long_id": "aws-ec2-enable-at-rest-encryption",
+      "rule_description": "Root block device is not encrypted",
+      "severity": "MEDIUM",
+      "resource": "aws_instance.app",
+      "location": {"filename": "/iac/insecure/ec2.tf", "start_line": 14},
+      "resolution": "Mettre encrypted = true sur root_block_device.",
+      "links": ["https://aquasecurity.github.io/tfsec/latest/checks/aws/ec2/enable-at-rest-encryption/"]
+    }
+  ]
+}

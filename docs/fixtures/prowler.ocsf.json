@@ -1,0 +1,58 @@
+[
+  {
+    "status_code": "FAIL",
+    "severity": "Critical",
+    "finding_info": {"title": "Ensure no root account access key exists"},
+    "remediation": {"desc": "Supprimer toute access key associée au compte root ; n'utiliser le root qu'exceptionnellement avec MFA."},
+    "resources": [{"name": "root", "region": "global"}],
+    "unmapped": {"check_id": "iam_no_root_access_key"}
+  },
+  {
+    "status_code": "FAIL",
+    "severity": "High",
+    "finding_info": {"title": "Ensure MFA is enabled for the root account"},
+    "remediation": {"desc": "Activer un dispositif MFA matériel ou virtuel sur le compte root."},
+    "resources": [{"name": "root", "region": "global"}],
+    "unmapped": {"check_id": "iam_root_mfa_enabled"}
+  },
+  {
+    "status_code": "FAIL",
+    "severity": "High",
+    "finding_info": {"title": "Ensure IAM password policy requires minimum length of 14 or greater"},
+    "remediation": {"desc": "Porter minimum_password_length à 14 dans la politique de mot de passe du compte."},
+    "resources": [{"name": "account_password_policy", "region": "global"}],
+    "unmapped": {"check_id": "iam_password_policy_minimum_length_14"}
+  },
+  {
+    "status_code": "FAIL",
+    "severity": "Medium",
+    "finding_info": {"title": "Ensure CloudTrail is enabled in all regions"},
+    "remediation": {"desc": "Configurer un trail multi-régions couvrant les events de management et les services globaux."},
+    "resources": [{"name": "default-trail", "region": "eu-west-3"}],
+    "unmapped": {"check_id": "cloudtrail_multi_region_enabled"}
+  },
+  {
+    "status_code": "FAIL",
+    "severity": "Medium",
+    "finding_info": {"title": "Ensure EBS volume encryption is enabled by default"},
+    "remediation": {"desc": "Activer le chiffrement EBS par défaut au niveau du compte/région."},
+    "resources": [{"name": "ebs-encryption-default", "region": "eu-west-3"}],
+    "unmapped": {"check_id": "ec2_ebs_default_encryption"}
+  },
+  {
+    "status_code": "FAIL",
+    "severity": "Low",
+    "finding_info": {"title": "Ensure access keys are rotated every 90 days or less"},
+    "remediation": {"desc": "Faire tourner ou désactiver toute access key de plus de 90 jours."},
+    "resources": [{"name": "user/ci-legacy", "region": "global"}],
+    "unmapped": {"check_id": "iam_rotate_access_keys_90_days"}
+  },
+  {
+    "status_code": "PASS",
+    "severity": "High",
+    "finding_info": {"title": "Ensure S3 bucket public access block is enabled at account level"},
+    "remediation": {"desc": ""},
+    "resources": [{"name": "account-pab", "region": "global"}],
+    "unmapped": {"check_id": "s3_account_level_public_access_blocks"}
+  }
+]

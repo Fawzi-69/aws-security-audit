@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rapport d'audit de sécurité AWS</title>
+<style>
+  :root { --bg:#0f1117; --panel:#171a22; --line:#262b36; --txt:#e6e8ee; --mut:#9aa3b2; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:28px 32px; border-bottom:1px solid var(--line); }
+  h1 { margin:0 0 4px; font-size:20px; }
+  .meta { color:var(--mut); font-size:13px; }
+  .cards { display:flex; gap:12px; padding:24px 32px; flex-wrap:wrap; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:96px; }
+  .card .n { font-size:26px; font-weight:700; }
+  .card .l { color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .card.sev-critical { border-left:3px solid #e5484d; }
+  .card.sev-high { border-left:3px solid #f5a524; }
+  .card.sev-medium { border-left:3px solid #e0c000; }
+  .card.sev-low { border-left:3px solid #3b9eff; }
+  .card.sev-info { border-left:3px solid #6b7280; }
+  .wrap { padding:0 32px 48px; }
+  table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#11141b; cursor:pointer; user-select:none; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); }
+  tr:last-child td { border-bottom:none; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:#c8d0dc; }
+  .sev { display:inline-block; padding:1px 8px; border-radius:999px; font-size:12px; font-weight:600; }
+  .sev-critical { background:#3a1416; color:#ff7a7d; }
+  .sev-high { background:#3a2a10; color:#ffbf5c; }
+  .sev-medium { background:#34320c; color:#ede35a; }
+  .sev-low { background:#0f2740; color:#7cc0ff; }
+  .sev-info { background:#23262d; color:#aab2c0; }
+  td .sev { white-space:nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rapport d'audit de sécurité AWS</h1>
+  <div class="meta">Généré le 2026-06-25 20:05 UTC &middot; 20 findings &middot; Sources : checkov (9), prowler (6), tfsec (5)</div>
+</header>
+<div class="cards"><div class='card sev-critical'><div class='n'>3</div><div class='l'>Critique</div></div><div class='card sev-high'><div class='n'>7</div><div class='l'>Élevée</div></div><div class='card sev-medium'><div class='n'>8</div><div class='l'>Moyenne</div></div><div class='card sev-low'><div class='n'>2</div><div class='l'>Faible</div></div><div class='card sev-info'><div class='n'>0</div><div class='l'>Info</div></div></div>
+<div class="wrap">
+  <table id="t">
+    <thead><tr>
+      <th onclick="sortBy(0)">#</th><th onclick="sortBy(1)">Sévérité</th>
+      <th onclick="sortBy(2)">Source</th><th onclick="sortBy(3)">Contrôle</th>
+      <th onclick="sortBy(4)">Constat</th><th onclick="sortBy(5)">Ressource</th>
+      <th onclick="sortBy(6)">Emplacement</th><th onclick="sortBy(7)">Remédiation</th>
+    </tr></thead>
+    <tbody>
+<tr data-sev='0'><td>1</td><td><span class='sev sev-critical'>Critique</span></td><td>checkov</td><td class='mono'>CKV_AWS_24</td><td>Ensure no security groups allow ingress from 0.0.0.0:0 to port 22</td><td class='mono'>aws_security_group.app</td><td class='mono'>/iac/insecure/ec2.tf:22</td><td>Restreindre l&#x27;ingress SSH à un CIDR de confiance, jamais 0.0.0.0/0.</td></tr>
+<tr data-sev='0'><td>2</td><td><span class='sev sev-critical'>Critique</span></td><td>prowler</td><td class='mono'>iam_no_root_access_key</td><td>Ensure no root account access key exists</td><td class='mono'>root</td><td class='mono'>global</td><td>Supprimer toute access key associée au compte root ; n&#x27;utiliser le root qu&#x27;exceptionnellement avec MFA.</td></tr>
+<tr data-sev='0'><td>3</td><td><span class='sev sev-critical'>Critique</span></td><td>tfsec</td><td class='mono'>aws-ec2-no-public-ingress-sgr</td><td>Security group rule allows ingress from public internet on port 22</td><td class='mono'>aws_security_group.app</td><td class='mono'>/iac/insecure/ec2.tf:27</td><td>Restreindre cidr_blocks à une plage privée.</td></tr>
+<tr data-sev='1'><td>4</td><td><span class='sev sev-high'>Élevée</span></td><td>checkov</td><td class='mono'>CKV_AWS_20</td><td>Ensure the S3 bucket does not allow READ permissions to everyone</td><td class='mono'>aws_s3_bucket_acl.app</td><td class='mono'>/iac/insecure/s3.tf:9</td><td>Retirer l&#x27;ACL public-read ; gérer l&#x27;accès via des policies restreintes.</td></tr>
+<tr data-sev='1'><td>5</td><td><span class='sev sev-high'>Élevée</span></td><td>checkov</td><td class='mono'>CKV_AWS_53</td><td>Ensure S3 bucket has block public ACLs enabled</td><td class='mono'>aws_s3_bucket_public_access_block.app</td><td class='mono'>/iac/insecure/s3.tf:16</td><td>Activer block_public_acls = true sur le public access block du bucket.</td></tr>
+<tr data-sev='1'><td>6</td><td><span class='sev sev-high'>Élevée</span></td><td>checkov</td><td class='mono'>CKV_AWS_79</td><td>Ensure Instance Metadata Service Version 1 is not enabled</td><td class='mono'>aws_instance.app</td><td class='mono'>/iac/insecure/ec2.tf:4</td><td>Imposer IMDSv2 : metadata_options { http_tokens = &quot;required&quot; }.</td></tr>
+<tr data-sev='1'><td>7</td><td><span class='sev sev-high'>Élevée</span></td><td>prowler</td><td class='mono'>iam_password_policy_minimum_length_14</td><td>Ensure IAM password policy requires minimum length of 14 or greater</td><td class='mono'>account_password_policy</td><td class='mono'>global</td><td>Porter minimum_password_length à 14 dans la politique de mot de passe du compte.</td></tr>
+<tr data-sev='1'><td>8</td><td><span class='sev sev-high'>Élevée</span></td><td>prowler</td><td class='mono'>iam_root_mfa_enabled</td><td>Ensure MFA is enabled for the root account</td><td class='mono'>root</td><td class='mono'>global</td><td>Activer un dispositif MFA matériel ou virtuel sur le compte root.</td></tr>
+<tr data-sev='1'><td>9</td><td><span class='sev sev-high'>Élevée</span></td><td>tfsec</td><td class='mono'>aws-ec2-enforce-http-token-imds</td><td>Instance does not require IMDS access to require a token</td><td class='mono'>aws_instance.app</td><td class='mono'>/iac/insecure/ec2.tf:9</td><td>Définir http_tokens = required dans metadata_options.</td></tr>
+<tr data-sev='1'><td>10</td><td><span class='sev sev-high'>Élevée</span></td><td>tfsec</td><td class='mono'>aws-s3-block-public-acls</td><td>S3 Access block should block public ACL</td><td class='mono'>aws_s3_bucket_public_access_block.app</td><td class='mono'>/iac/insecure/s3.tf:18</td><td>Mettre block_public_acls à true.</td></tr>
+<tr data-sev='2'><td>11</td><td><span class='sev sev-medium'>Moyenne</span></td><td>checkov</td><td class='mono'>CKV_AWS_145</td><td>Ensure that S3 buckets are encrypted with KMS by default</td><td class='mono'>aws_s3_bucket.app</td><td class='mono'>/iac/insecure/s3.tf:5</td><td>Ajouter aws_s3_bucket_server_side_encryption_configuration avec une CMK KMS.</td></tr>
+<tr data-sev='2'><td>12</td><td><span class='sev sev-medium'>Moyenne</span></td><td>checkov</td><td class='mono'>CKV_AWS_67</td><td>Ensure CloudTrail is enabled in all Regions</td><td class='mono'>aws_cloudtrail.this</td><td class='mono'>/iac/insecure/logging.tf:10</td><td>Mettre is_multi_region_trail = true.</td></tr>
+<tr data-sev='2'><td>13</td><td><span class='sev sev-medium'>Moyenne</span></td><td>checkov</td><td class='mono'>CKV_AWS_7</td><td>Ensure rotation for customer created CMKs is enabled</td><td class='mono'>aws_kms_key.this</td><td class='mono'>/iac/insecure/kms.tf:4</td><td>Activer enable_key_rotation = true sur la CMK.</td></tr>
+<tr data-sev='2'><td>14</td><td><span class='sev sev-medium'>Moyenne</span></td><td>checkov</td><td class='mono'>CKV_AWS_8</td><td>Ensure all data stored in the Launch configuration EBS is securely encrypted</td><td class='mono'>aws_instance.app</td><td class='mono'>/iac/insecure/ec2.tf:14</td><td>Chiffrer le volume racine : root_block_device { encrypted = true }.</td></tr>
+<tr data-sev='2'><td>15</td><td><span class='sev sev-medium'>Moyenne</span></td><td>prowler</td><td class='mono'>cloudtrail_multi_region_enabled</td><td>Ensure CloudTrail is enabled in all regions</td><td class='mono'>default-trail</td><td class='mono'>eu-west-3</td><td>Configurer un trail multi-régions couvrant les events de management et les services globaux.</td></tr>
+<tr data-sev='2'><td>16</td><td><span class='sev sev-medium'>Moyenne</span></td><td>prowler</td><td class='mono'>ec2_ebs_default_encryption</td><td>Ensure EBS volume encryption is enabled by default</td><td class='mono'>ebs-encryption-default</td><td class='mono'>eu-west-3</td><td>Activer le chiffrement EBS par défaut au niveau du compte/région.</td></tr>
+<tr data-sev='2'><td>17</td><td><span class='sev sev-medium'>Moyenne</span></td><td>tfsec</td><td class='mono'>aws-ec2-enable-at-rest-encryption</td><td>Root block device is not encrypted</td><td class='mono'>aws_instance.app</td><td class='mono'>/iac/insecure/ec2.tf:14</td><td>Mettre encrypted = true sur root_block_device.</td></tr>
+<tr data-sev='2'><td>18</td><td><span class='sev sev-medium'>Moyenne</span></td><td>tfsec</td><td class='mono'>aws-s3-encryption-customer-key</td><td>S3 encryption should use Customer Managed Keys</td><td class='mono'>aws_s3_bucket.app</td><td class='mono'>/iac/insecure/s3.tf:5</td><td>Configurer le chiffrement SSE-KMS avec une CMK.</td></tr>
+<tr data-sev='3'><td>19</td><td><span class='sev sev-low'>Faible</span></td><td>checkov</td><td class='mono'>CKV_AWS_36</td><td>Ensure CloudTrail log file validation is enabled</td><td class='mono'>aws_cloudtrail.this</td><td class='mono'>/iac/insecure/logging.tf:10</td><td>Mettre enable_log_file_validation = true.</td></tr>
+<tr data-sev='3'><td>20</td><td><span class='sev sev-low'>Faible</span></td><td>prowler</td><td class='mono'>iam_rotate_access_keys_90_days</td><td>Ensure access keys are rotated every 90 days or less</td><td class='mono'>user/ci-legacy</td><td class='mono'>global</td><td>Faire tourner ou désactiver toute access key de plus de 90 jours.</td></tr>
+    </tbody>
+  </table>
+</div>
+<script>
+  function sortBy(col) {
+    var tb = document.querySelector('#t tbody');
+    var rows = Array.prototype.slice.call(tb.rows);
+    var asc = tb.getAttribute('data-col') != col || tb.getAttribute('data-asc') != '1';
+    rows.sort(function(a, b) {
+      var x = col === 1 ? +a.dataset.sev : a.cells[col].innerText.toLowerCase();
+      var y = col === 1 ? +b.dataset.sev : b.cells[col].innerText.toLowerCase();
+      return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1);
+    });
+    rows.forEach(function(r) { tb.appendChild(r); });
+    tb.setAttribute('data-col', col); tb.setAttribute('data-asc', asc ? '1' : '0');
+  }
+</script>
+</body>
+</html>
