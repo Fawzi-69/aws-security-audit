@@ -1,0 +1,30 @@
+# --- Sorties d'audit et de scan (générées) ---
+reports/*
+!reports/.gitkeep
+!reports/sample/
+output/
+reports/**/*.ocsf.json
+
+# --- Terraform ---
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Outils / divers ---
+.DS_Store
+*.log
+.idea/
+.vscode/
