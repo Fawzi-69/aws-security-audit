@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Tests unitaires (générateur de rapport)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lancer les tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Vérifier la génération du rapport d'exemple
+        run: |
+          python scripts/generate_report.py --synthetic \
+            --checkov docs/fixtures/checkov-insecure.json \
+            --tfsec   docs/fixtures/tfsec-insecure.json \
+            --prowler docs/fixtures/prowler.ocsf.json \
+            -d docs/fixtures -o /tmp/report-check
+          test -f /tmp/report-check/findings.json

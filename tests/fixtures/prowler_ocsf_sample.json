@@ -1,0 +1,46 @@
+[
+  {
+    "metadata": {
+      "event_code": "iam_root_mfa_enabled",
+      "product": {"name": "Prowler", "vendor_name": "Prowler", "version": "4.5.0"}
+    },
+    "severity_id": 4,
+    "severity": "High",
+    "status_code": "FAIL",
+    "status": "New",
+    "finding_info": {
+      "title": "Ensure MFA is enabled for the root account",
+      "uid": "prowler-aws-iam_root_mfa_enabled-123456789012-global"
+    },
+    "resources": [
+      {"name": "root", "uid": "arn:aws:iam::123456789012:root", "type": "AwsIamUser", "region": "global"}
+    ],
+    "remediation": {
+      "desc": "Activer un dispositif MFA sur le compte root.",
+      "references": ["https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html"]
+    },
+    "cloud": {"region": "us-east-1", "account": {"uid": "123456789012"}}
+  },
+  {
+    "metadata": {"product": {"name": "Prowler", "version": "4.5.0"}},
+    "severity_id": 5,
+    "status_code": "FAIL",
+    "status": "New",
+    "finding_info": {
+      "title": "Ensure no root account access key exists",
+      "uid": "prowler-aws-iam_no_root_access_key-123456789012-global"
+    },
+    "resources": [{"uid": "arn:aws:iam::123456789012:root", "region": "global"}],
+    "remediation": {"references": ["https://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html"]},
+    "cloud": {"region": "us-east-1"}
+  },
+  {
+    "metadata": {"event_code": "s3_account_level_public_access_blocks"},
+    "severity_id": 4,
+    "status_code": "PASS",
+    "status": "New",
+    "finding_info": {"title": "Ensure S3 account-level public access block is enabled"},
+    "resources": [{"name": "account-pab", "region": "global"}],
+    "remediation": {"desc": ""}
+  }
+]
