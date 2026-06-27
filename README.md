@@ -66,7 +66,8 @@ make report         # consolide -> reports/findings.json + report.html + remedia
 ```bash
 make scan-iac       # Checkov + tfsec (gate dur sur hardened/, démo sur insecure/)
 make tf-validate    # fmt -check + validate + tflint + checkov sur le Terraform durci
-make sample         # régénère reports/sample/ depuis docs/fixtures
+make test           # tests unitaires du générateur de rapport
+make sample         # régénère reports/sample/ (synthétique) depuis docs/fixtures
 ```
 
 ### En CI
@@ -77,7 +78,11 @@ make sample         # régénère reports/sample/ depuis docs/fixtures
 
 ## Exemple de rapport
 
-Généré à partir des fixtures (`make sample`) — agrège Prowler, Checkov et tfsec, trié par sévérité :
+> **Données illustratives.** Le rapport d'exemple est généré (`make sample`) à partir de fixtures
+> synthétiques, **pas d'un compte AWS réel**. Il est explicitement marqué comme tel (bannière HTML,
+> champ `synthetic` dans `findings.json`). Il sert à montrer le format, pas un résultat d'audit.
+
+Agrège Prowler, Checkov et tfsec, trié par sévérité :
 
 ![Rapport d'audit consolidé](docs/report-sample.png)
 
@@ -112,3 +117,17 @@ password policy IAM conforme CIS, rotation KMS, CloudTrail multi-région avec va
   `#checkov:skip` justifiés), jamais masqués silencieusement.
 - **Déterminisme.** Le scan IaC ne télécharge pas de modules externes ; le rapport n'utilise que la
   bibliothèque standard Python (aucun appel réseau).
+
+## Statut & limites (transparence)
+
+- **Validé statiquement.** `iac/hardened` et le rôle OIDC passent `fmt`/`validate`/`tflint`/`checkov`
+  à **0 finding**, et le générateur de rapport est couvert par des tests unitaires (`make test`).
+  En revanche, la chaîne **n'a pas encore été exécutée de bout en bout sur un compte AWS réel** :
+  l'audit Prowler et l'intégration OIDC sont à valider sur un compte sandbox avant un usage en prestation.
+- **Le « 0 finding » sur le durci suppose 15 exceptions assumées** (`#checkov:skip` commentés). La
+  plupart sont des faux positifs structurels (le `*` d'une key policy KMS, l'auto-journalisation d'un
+  bucket de logs). **Deux relèvent d'un choix de périmètre** et non d'un faux positif :
+  `CKV2_AWS_10` (export CloudTrail → CloudWatch Logs) et `CKV_AWS_252` (notification SNS) sont des
+  contrôles d'alerting volontairement laissés hors de cet exemple. À réintégrer pour un déploiement réel.
+- **tfsec** est désormais maintenu sous Trivy (`trivy config`) ; le binaire `tfsec` reste fonctionnel
+  mais l'outil est en fin de vie — migration recommandée à terme.
