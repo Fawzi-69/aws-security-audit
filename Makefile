@@ -8,7 +8,7 @@ COMPLIANCE   ?= cis_3.0_aws
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deps audit scan-iac tf-validate report sample clean
+.PHONY: help deps audit scan-iac tf-validate report sample test clean
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -39,12 +39,15 @@ tf-validate: ## fmt -check + validate + tflint sur le Terraform durci
 report: ## Génère le rapport consolidé depuis reports/
 	@scripts/generate_report.sh
 
-sample: ## Régénère le rapport d'exemple depuis docs/fixtures
-	@python3 scripts/generate_report.py \
+sample: ## Régénère le rapport d'exemple (synthétique) depuis docs/fixtures
+	@python3 scripts/generate_report.py --synthetic \
 		--checkov docs/fixtures/checkov-insecure.json \
 		--tfsec   docs/fixtures/tfsec-insecure.json \
 		--prowler docs/fixtures/prowler.ocsf.json \
 		-d docs/fixtures -o reports/sample
+
+test: ## Lance les tests unitaires du générateur de rapport
+	@python3 -m unittest discover -s tests -v
 
 clean: ## Supprime les sorties générées (hors sample)
 	@find reports -maxdepth 1 -type f -delete 2>/dev/null || true

@@ -27,15 +27,22 @@ SEVERITY_LABEL = {
 }
 
 
-def norm_severity(value: str | None) -> str:
-    if not value:
+# OCSF severity_id (0..6) — utilisé par Prowler quand le libellé texte est absent.
+SEVERITY_ID_MAP = {0: "info", 1: "info", 2: "low", 3: "medium", 4: "high", 5: "critical", 6: "critical"}
+
+
+def norm_severity(value) -> str:
+    if value is None or value == "":
         return "medium"
+    if isinstance(value, (int, float)) or (isinstance(value, str) and value.isdigit()):
+        return SEVERITY_ID_MAP.get(int(value), "medium")
     v = str(value).strip().lower()
     aliases = {
         "informational": "info",
         "moderate": "medium",
         "warning": "low",
         "error": "high",
+        "fatal": "critical",
         "critical": "critical",
         "high": "high",
         "medium": "medium",
@@ -99,28 +106,56 @@ def parse_tfsec(data) -> list[dict]:
 
 
 def parse_prowler_ocsf(data) -> list[dict]:
-    """Prowler --output-formats json-ocsf : liste de findings OCSF."""
+    """Prowler --output-formats json-ocsf : liste de findings OCSF.
+
+    Tolérant aux variations de schéma entre versions de Prowler : l'identifiant de
+    check, la sévérité et la ressource sont cherchés à plusieurs emplacements connus.
+    """
     findings = []
     for item in data or []:
         if not isinstance(item, dict):
             continue
-        if str(item.get("status_code", "")).upper() not in ("FAIL", "FAILED"):
+        # Statut : ne garder que les échecs. status_code (FAIL/PASS) prioritaire ;
+        # status (New/Suppressed) ne doit pas être confondu avec le résultat.
+        status = str(item.get("status_code") or item.get("status") or "").upper()
+        if status not in ("FAIL", "FAILED"):
             continue
+
         info = item.get("finding_info", {}) or {}
+        meta = item.get("metadata", {}) or {}
         rem = item.get("remediation", {}) or {}
-        resources = item.get("resources", []) or []
-        res_name = resources[0].get("name") or resources[0].get("uid") if resources else ""
         unmapped = item.get("unmapped", {}) or {}
+        resources = item.get("resources", []) or []
+        res0 = resources[0] if resources else {}
+
+        # Identifiant de contrôle : event_code (OCSF récent) -> unmapped -> uid.
+        control = (
+            meta.get("event_code")
+            or unmapped.get("check_id")
+            or info.get("uid")
+            or (info.get("title", "")[:40])
+        )
+        # Sévérité : libellé texte sinon severity_id numérique.
+        severity = item.get("severity")
+        if severity in (None, "") and "severity_id" in item:
+            severity = item.get("severity_id")
+
+        title = info.get("title") or item.get("risk_details") or control
+        resource = res0.get("name") or res0.get("uid") or ""
+        region = res0.get("region") or (item.get("cloud", {}) or {}).get("region") or "aws"
+        remediation = rem.get("desc") or "; ".join(rem.get("references", []) or []) \
+            or "Voir la recommandation Prowler/CIS."
+
         findings.append(
             {
                 "source": "prowler",
-                "severity": norm_severity(item.get("severity")),
-                "control": unmapped.get("check_id") or info.get("title", "")[:40],
-                "title": info.get("title", ""),
-                "resource": res_name or "",
-                "location": (resources[0].get("region") if resources else "") or "aws",
+                "severity": norm_severity(severity),
+                "control": control,
+                "title": title,
+                "resource": resource,
+                "location": region,
                 "status": "fail",
-                "remediation": rem.get("desc") or "Voir la recommandation Prowler/CIS.",
+                "remediation": remediation,
             }
         )
     return findings
@@ -174,7 +209,7 @@ def summarize(findings: list[dict]) -> dict:
 
 
 # --- Rendu --------------------------------------------------------------------
-def render_html(findings: list[dict], summary: dict, generated: str) -> str:
+def render_html(findings: list[dict], summary: dict, generated: str, synthetic: bool = False) -> str:
     rows = []
     for i, f in enumerate(findings, 1):
         sev = f["severity"]
@@ -205,19 +240,34 @@ def render_html(findings: list[dict], summary: dict, generated: str) -> str:
         for s in SEVERITY_ORDER
     )
     sources = ", ".join(f"{k} ({v})" for k, v in sorted(summary["by_source"].items())) or "—"
+    banner = (
+        "<div class='syn'>⚠ Données illustratives (synthétiques) — généré depuis des fixtures, "
+        "ne reflète aucun compte AWS réel.</div>"
+        if synthetic
+        else ""
+    )
     return TEMPLATE.format(
         generated=html.escape(generated),
         total=summary["total"],
         sources=html.escape(sources),
         cards=cards,
+        banner=banner,
         rows="\n".join(rows) or "<tr><td colspan='8'>Aucun finding.</td></tr>",
     )
 
 
-def render_remediation(findings: list[dict], summary: dict, generated: str) -> str:
+def render_remediation(findings: list[dict], summary: dict, generated: str, synthetic: bool = False) -> str:
     lines = [
         "# Grille de remédiation priorisée",
         "",
+    ]
+    if synthetic:
+        lines += [
+            "> ⚠️ **Données illustratives (synthétiques)** — générées depuis des fixtures de démonstration.",
+            "> Ne reflète aucun compte AWS réel.",
+            "",
+        ]
+    lines += [
         f"_Généré le {generated}. Total : {summary['total']} findings._",
         "",
         "| # | Sévérité | Source | Contrôle | Ressource | Impact / constat | Correctif |",
@@ -241,6 +291,8 @@ def main() -> int:
     ap.add_argument("--checkov", action="append", default=[], help="Fichier JSON Checkov explicite.")
     ap.add_argument("--tfsec", action="append", default=[], help="Fichier JSON tfsec explicite.")
     ap.add_argument("--prowler", action="append", default=[], help="Fichier JSON OCSF Prowler explicite.")
+    ap.add_argument("--synthetic", action="store_true",
+                    help="Marque le rapport comme illustratif (fixtures, hors compte réel).")
     args = ap.parse_args()
 
     out_dir = args.output_dir or args.report_dir
@@ -253,12 +305,13 @@ def main() -> int:
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     with open(os.path.join(out_dir, "findings.json"), "w", encoding="utf-8") as fh:
-        json.dump({"generated": generated, "summary": summary, "findings": findings}, fh,
+        json.dump({"generated": generated, "synthetic": args.synthetic,
+                   "summary": summary, "findings": findings}, fh,
                   indent=2, ensure_ascii=False)
     with open(os.path.join(out_dir, "report.html"), "w", encoding="utf-8") as fh:
-        fh.write(render_html(findings, summary, generated))
+        fh.write(render_html(findings, summary, generated, args.synthetic))
     with open(os.path.join(out_dir, "remediation.md"), "w", encoding="utf-8") as fh:
-        fh.write(render_remediation(findings, summary, generated))
+        fh.write(render_remediation(findings, summary, generated, args.synthetic))
 
     print(f"{summary['total']} findings -> {out_dir}/findings.json, report.html, remediation.md")
     return 0
@@ -299,9 +352,11 @@ TEMPLATE = """<!doctype html>
   .sev-low {{ background:#0f2740; color:#7cc0ff; }}
   .sev-info {{ background:#23262d; color:#aab2c0; }}
   td .sev {{ white-space:nowrap; }}
+  .syn {{ background:#3a2a10; color:#ffce7a; border-bottom:1px solid #5a3f15; padding:10px 32px; font-size:13px; }}
 </style>
 </head>
 <body>
+{banner}
 <header>
   <h1>Rapport d'audit de sécurité AWS</h1>
   <div class="meta">Généré le {generated} &middot; {total} findings &middot; Sources : {sources}</div>

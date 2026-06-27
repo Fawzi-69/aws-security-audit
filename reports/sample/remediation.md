@@ -1,6 +1,9 @@
 # Grille de remédiation priorisée
 
-_Généré le 2026-06-25 20:05 UTC. Total : 20 findings._
+> ⚠️ **Données illustratives (synthétiques)** — générées depuis des fixtures de démonstration.
+> Ne reflète aucun compte AWS réel.
+
+_Généré le 2026-06-27 22:32 UTC. Total : 20 findings._
 
 | # | Sévérité | Source | Contrôle | Ressource | Impact / constat | Correctif |
 |---|----------|--------|----------|-----------|------------------|-----------|
